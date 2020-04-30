@@ -2,12 +2,28 @@ import serial
 import time
 import jbus
 
+#UPS COMMUNICATION CLASS
+
+#This class is not perfect and has not been tested on a big number of UPS.
+#
+#Exports:
+#  send_command(self, command)
+#  request_measures(self)
+#  request_identifier(self)
+#  extract_word(self, answer, word_number)
+#  (other functions are intended for internal use only)
+
+#TODO: implementare la gestione degli errori in tutto il resto della classe
+#      magari creando una variabile esportata che contenga l'esito dell'azione
+
+#TODO: rinominare le variabili locali utilizzando le trail underscore
+
+#TODO: rinominare le funzioni locali utilizzando le trail underscore
+
 class ups:
     def __init__(self, port, speed=9600, node=0x01):
         self.debug = False
         #self.debug = True
-        #TODO: implementare la gestione degli errori in tutto il resto della classe
-        #TODO: rinominare le variabili locali utilizzando le trail underscore
         self.error = ""
         self.port = port
         self.node = node
@@ -47,6 +63,8 @@ class ups:
         return answer
     
     def send_command(self, command):
+        """Send the command passed as argument to the UPS
+        """
         question = jbus.jbus_generator_data_write(self.node, 0x15b0, bytes([0x00,command]))
         answer = self.send_request(question)
         #print("Question: [", question, "]")
@@ -54,6 +72,9 @@ class ups:
         return self.verify_response(question, answer)
     
     def request_measures(self):
+        """Request the measures to the UPS.
+        Returns: the complete measures frame
+        """
         question = jbus.jbus_generator_read(self.node, 0x1060, 48)
         answer = self.send_request(question)
         #print("Question: [", question, "]")
@@ -66,6 +87,9 @@ class ups:
             return False
         
     def request_identifier(self):
+        """Ask the identifies to the UPS.
+        Returns: a dictionary with informations returned from UPS
+        """
         question = jbus.jbus_generator_read(self.node, 0x1000, 12)
         answer = self.send_request(question)
         #print("Question: [", question, "]")
@@ -98,7 +122,7 @@ class ups:
             return "[ups] - Error - No response, or response too short"
         if (jbus.jbus_add_checksum(response[0:-2]) != response):
             return "[ups] - Error - Checksum error"
-        #TODO: qui verifica checksum
+        #TODO: qui aggiungere la verifica del checksum
         if ((int(response[2]) & 0x80) != 0):
             if (response[3] == 0x01):
                 return "[ups] - Error - Bad function code"
