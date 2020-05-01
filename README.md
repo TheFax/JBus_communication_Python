@@ -1,6 +1,6 @@
 # JBus_communication_Python
 
-Everything you need to establish a basic communication with a Socomec UPS via Python code.
+Everything you need to establish a basic communication with an UPS via Python code.
 
 ## Description
 
